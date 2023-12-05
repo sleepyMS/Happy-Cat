@@ -1,77 +1,100 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Map, MapMarker, Polyline, CustomOverlayMap } from "react-kakao-maps-sdk";
+import { Map, MapMarker } from "react-kakao-maps-sdk";
+import useKakaoLoader from "./useKakaoLoader"
 const { kakao } = window;
 
-const MyMap = () => {
+export default function MyMap() {
   const [map, setMap] = useState(null);
-  const [marker, setMarker] = useState(null); 
-  const initialLatitude = 37.277272;
-  const initialLongitude = 127.134346;
+  const [marker, setMarker] = useState(null);
+  const [infowindow, setInfowindow] = useState(null);
+  const [initialLatitude, setInitialLatitude] = useState(37.277272);
+  const [initialLongitude, setInitialLongitude] = useState(127.134346);
+
+  useKakaoLoader();
 
   useEffect(() => {
-    const container = document.getElementById('map');
-    const options = {
-      center: new kakao.maps.LatLng(initialLatitude, initialLongitude),
-      level: 3
-    };
+    axios
+      .get('https://apis.data.go.kr/6260000/BusanTblFnrstrnStusService/getTblFnrstrnStusInfo?serviceKey=GMMb25M6CeNcyjdi0iJYWziSyQ1XhLZkO9vfxnVW391ZbRvT%2BeUSs5MoCDmD6YzF38nAucMZbMWtobyJW84gYA%3D%3D&numOfRows=100&pageNo=1&resultType=json')
 
-    setMap(new kakao.maps.Map(container, options));
-  }, [initialLatitude, initialLongitude]);
+      .then((response) => {
+        const container = document.getElementById('map');
+        const data = response.data.getTblFnrstrnStusInfo.body.items.item;
+        console.log(response.data);
 
-  const updateMap = async () => {
-    try {
-      const nameInput = document.getElementById('nameInput');
-      const restaurantName = nameInput.value.trim(); // 입력값에서 공백 제거
+        const nameInput = document.getElementById('nameInput');
+        const restaurantName = nameInput.value();
 
-      const response = await axios.get('https://apis.data.go.kr/6260000/BusanTblFnrstrnStusService/getTblFnrstrnStusInfo?serviceKey=GMMb25M6CeNcyjdi0iJYWziSyQ1XhLZkO9vfxnVW391ZbRvT%2BeUSs5MoCDmD6YzF38nAucMZbMWtobyJW84gYA%3D%3D&numOfRows=10&pageNo=1&resultType=json');
+        const index = data.findIndex(item => item.bsnsNm === restaurantName);
 
-      // 식당 이름으로 검색하여 인덱스 찾기
-      const index = response.data.getTblFnrstrnStusInfo.body.items.item.findIndex(item => item.bsnsNm === restaurantName);
+        if (index !== -1) {
+          const latitude = response.data.getTblFnrstrnStusInfo.body.items.item[index].lat;
+          const longitude = response.data.getTblFnrstrnStusInfo.body.items.item[index].lng;
+          const restaurantNum = response.data.getTblFnrstrnStusInfo.body.items.item[index].tel;
+          const mapLink = 'https://map.kakao.com/link/map/' + restaurantName + ',' + latitude + ',' + longitude;
 
-      if (index !== -1) { // 인덱스가 유효한 경우에만 처리
-        const latitude = response.data.getTblFnrstrnStusInfo.body.items.item[index].lat;
-        const longitude = response.data.getTblFnrstrnStusInfo.body.items.item[index].lng;
-        const restaurantNum = response.data.getTblFnrstrnStusInfo.body.items.item[index].tel;
-        const mapLink = 'https://map.kakao.com/link/map/' + restaurantName + ',' + latitude + ',' + longitude;
+          const newMarker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(latitude, longitude),
+            map: map
+          });
 
-        // 새로운 중심 위치로 이동
-        map.setCenter(new kakao.maps.LatLng(latitude, longitude));
+          const newInfowindow = new kakao.maps.InfoWindow({
+            content: MapMarker
+          });
+  
+          newInfowindow.open(map, newMarker);
 
-        const newMarker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(latitude, longitude),
-          map: map
-        });
-
-        const iwContent = '<div style="padding:5px;">' + restaurantName + '<br>' + restaurantNum + '<br><a href="' + mapLink + '" style="color:blue" target="_blank">큰지도보기</a></div>';
-
-        const infowindow = new kakao.maps.InfoWindow({
-          content: iwContent
-        });
-
-        infowindow.open(map, newMarker);
-
-        if (marker) {
-          marker.setMap(null);
+          setMarker(newMarker);
+          setInfowindow(newInfowindow);
         }
-
-        setMarker(newMarker);
-      } else {
-        console.log('식당을 찾을 수 없습니다.');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
   return (
     <div>
-      <div id="map" style={{ width: '100%', height: '400px' }}></div>
-      <label htmlFor="nameInput">식당 이름</label>
-      <input type="text" id="nameInput" placeholder="식당 이름을 입력하시오." />
-      <button onClick={updateMap}>검색</button>
+      <Map // 지도를 표시할 Container
+        id="map"
+        center={{
+          lat: initialLatitude,
+          lng: initialLongitude,
+        }}
+        style={{
+          position: 'fixed',
+          width: "calc(100% - 300px)",
+          left: '300px',
+          height: "100%",
+        }}
+        level={3} // 지도의 확대 레벨
+      >
+        <MapMarker position={{
+          lat: initialLatitude,
+          lng: initialLongitude,
+        }}
+        >
+          <div style={{ padding: "5px", color: "#000" }}>
+            Hello World! <br />
+            <a
+              href="https://map.kakao.com/link/map/Hello World!,33.450701,126.570667"
+              style={{ color: "blue" }}
+              target="_blank"
+              rel="noreferrer"
+            >
+            자세히보기
+            </a>
+            <a
+              href="https://map.kakao.com/link/to/Hello World!,43.450701,126.570667"
+              style={{ color: "blue" }}
+              target="_blank"
+              rel="noreferrer"
+            >
+            길 찾기
+            </a>
+          </div>
+        </MapMarker>
+      </Map>
     </div>
   );
 };
-
-export default MyMap;

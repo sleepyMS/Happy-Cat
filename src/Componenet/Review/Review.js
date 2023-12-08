@@ -43,7 +43,6 @@ export default function Review() {
         }
     }, [searchRe]);
 
-
     return (
         <div style={{ position: 'absolute', right: '0', bottom: '0' }}>
             <div style={{ position: 'relative' }}>

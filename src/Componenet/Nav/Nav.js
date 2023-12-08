@@ -15,14 +15,18 @@ export default function Nav() {
     }
 
     useEffect(() => {
-        axios
-            .get(
-                'https://apis.data.go.kr/6260000/BusanTblFnrstrnStusService/getTblFnrstrnStusInfo?serviceKey=wRLho0kCMjLKJpoZen9ZjkdIKqy%2F9lIBdPWyQs3IaxRX4bbCYMpSMrkTeSClT84fLZIHAMS6PmRAik0JjHYv8A%3D%3D&numOfRows=50&pageNo=1&resultType=json'
-            )
-            .then((response) => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(
+                    'https://apis.data.go.kr/6260000/BusanTblFnrstrnStusService/getTblFnrstrnStusInfo?serviceKey=wRLho0kCMjLKJpoZen9ZjkdIKqy%2F9lIBdPWyQs3IaxRX4bbCYMpSMrkTeSClT84fLZIHAMS6PmRAik0JjHYv8A%3D%3D&numOfRows=50&pageNo=1&resultType=json'
+                );
                 setDataBases(response.data.getTblFnrstrnStusInfo.body.items.item);
-            })
-            .catch(console.log);
+            } catch (error) {
+                console.log('error:', error);
+            }
+        };
+
+        fetchData();
     }, []);
 
     return (
@@ -45,7 +49,7 @@ export default function Nav() {
                 <button onClick={searchReset}>검색</button>
                 <NavDraw dataBases={dataBases} />
 
-                
+
             </div>
             <MyMap search={search} />
         </div>
@@ -63,14 +67,11 @@ const NavDraw = ({ dataBases }) => {
                 const { bsnsNm } = dataBases[i];
                 filterData = [...filterData, { bsnsNm: '가게명: ' + bsnsNm }];
             }
-            // console.log(filterData);
-            setResultData(filterData);
         } else if (drawNav === 1) {
             for (let i = 0; i < dataBases.length; i++) {
                 const { bsnsNm, tel, bsnsCond } = dataBases[i];
                 filterData = [...filterData, { bsnsNm: '가게명: ' + bsnsNm, tel: '가게 번호: ' + tel, bsnsCond: '가게 유형: ' + bsnsCond }];
             }
-            setResultData(filterData);
         } else if (drawNav === 2) {
             for (let i = 0; i < dataBases.length; i++) {
                 const { bsnsNm, tel, bsnsCond } = dataBases[i];
@@ -78,8 +79,8 @@ const NavDraw = ({ dataBases }) => {
                     filterData = [...filterData, { bsnsNm: '가게명: ' + bsnsNm, tel: '가게 번호: ' + tel, bsnsCond: '가게 유형: ' + bsnsCond }];
                 }
             }
-            setResultData(filterData);
         }
+        setResultData(filterData);
     }, [drawNav, dataBases]);
 
     return (
@@ -89,7 +90,6 @@ const NavDraw = ({ dataBases }) => {
                 <button type='button' onClick={() => setDrawNav(1)}>가게명+가게정보</button>
                 <button type='button' onClick={() => setDrawNav(2)}>한식집 정보</button>
             </div>
-
             <NavList resultData={resultData} />
         </div>
     );

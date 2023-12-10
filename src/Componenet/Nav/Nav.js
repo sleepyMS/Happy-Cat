@@ -25,9 +25,9 @@ export default function Nav() {
                 console.log('error:', error);
             }
         };
-
         fetchData();
     }, []);
+    
 
     return (
         <div>

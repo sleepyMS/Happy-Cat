@@ -6,7 +6,10 @@ export default function Review() {
     const [inputRe, setInputRe] = useState("");
     const [initialResults, setInitialResults] = useState([]); // 초기상태 관리
     const [visible, setVisible] = useState(false); // 출력상태 관리
-    const reviews = [
+    const [newReview, setNewreview] = useState("");
+    const [inputNewre, setInputnewre] = useState("");
+    const [newRe, setNewRe] = useState([]);
+    const [reviews, setReviews] = useState([
         { 덴포라: "여행중 맛집으로 찾아서 갔습니다. 역시 신선한 재료로 푸짐하게 잘 먹었어요. 특히 랍스터 회 일품이었습니다. 랍스터 코스요리는 이곳이 짱!" },
         { 동백삼계탕: "몸보신하러가기딱좋습니다 직원분들친절하시고,음식도맛있어요 자주이용할것같아요" },
         { 수비가든: "정말 맛있습니다. 오리고기 잘 못 먹는데 여기는 잡내 하나도 없이 고소합니다. 최고입니다. 여름, 겨울 몸 보신에 짱입니다." },
@@ -17,9 +20,11 @@ export default function Review() {
         { 거북선횟집: "문텐로드 산책 후 맛있게 먹었어요. 광어가 탱글탱글 푸짐해서 좋았어요. 낙지, 해삼, 멍게, 문어, 가리비도 곁들여줘서 접시 깨끗이 비웠어요. 매운탕까지 먹고나니 튀김과 생선구이는 테이크아웃 할 정도예요." },
         { 수백한상: "10년 단골인 돼지국밥, 순대국밥집이네요~ 해운대에 올때마다 방문해서 이제는 루틴이 되어 버렸네요. 국밥 특유의 돼지 냄새 같은 것은 전혀 없고, 테이블 등이 깨끗하게 되어 있어서 매번 만족스러웠던 식사가 가능합니다!" },
         { 원조지구촌한우생고기: "고기가 신선하고 맛있어요. 비계가 없는 안심 3인분으로 주문했는데. 완전 만족했어요.우거지된장도 맛있고. 수수부꾸미와 후식으로 얼음동동 식혜까지 완벽합니다.~~ 질 좋은 고기 원하시면. 여기 강추입니다" }
-    ];
+    ]);
     const [resultRe, setResultRe] = useState('');
-    const keys = reviews.map(review => Object.keys(review)[0]);
+
+    const keys = reviews.length && reviews.map(review => Object.keys(review)[0]);
+
     const reviewRef = useRef(null);
 
     useEffect(() => { // 초기 상태 데이터 로딩
@@ -41,18 +46,40 @@ export default function Review() {
                 break;
             }
         }
-    }, [searchRe]);
+    }, [searchRe, reviews]);
+
+    const onUpdate = () => {
+        // 리뷰 생성 또는 갱신
+        let updatedReviews = reviews.map((review) => {
+            const key = Object.keys(review)[0];
+            if (key === inputNewre) {
+                return { [key]: review[key] + newReview + '\n'};
+            }
+            return review;
+        });
+
+        const isReviewExist = reviews.some((review) => Object.keys(review)[0] === inputNewre);
+
+        if (!isReviewExist) {
+            const newReviewItem = { [inputNewre]: newReview };
+            updatedReviews = [...updatedReviews, newReviewItem];
+        }
+
+        setReviews(updatedReviews);
+        setInputnewre("");
+        setNewreview("");
+    };
 
     return (
         <div style={{ position: 'absolute', right: '0', bottom: '0' }}>
             <div style={{ position: 'relative' }}>
                 <button onClick={() => setVisible(!visible)} style={{ position: 'absolute', right: '80px', bottom: '50px', scale: '1.5' }}>
-                    dfjadklj
+                    리뷰보기
                 </button>
-                <div style={{ display: visible ? 'block' : 'none', position: 'absolute', backgroundColor: '#aaaaaa', width: '300px', height: '500px', right: '80px', bottom: '100px' }}>
-                    <div style={{ position: 'absolute', width: '200px', height: '400px', right: '50px', top: '40px' }}>
+                <p style={{ display: visible ? 'block' : 'none', position: 'absolute', backgroundColor: '#aaaaaa', width: '300px', height: '500px', right: '80px', bottom: '100px' }}>
+                    <p style={{ position: 'absolute', width: '200px', height: '400px', right: '50px', top: '50px', whiteSpace:'pre-wrap'}}>
                         {searchRe} : {resultRe}
-                    </div>
+                    </p>
                     <div style={{ position: 'absolute', bottom: '30px', left: '50px' }}>
                         <input className="review-input"
                             placeholder="식당명"
@@ -72,8 +99,21 @@ export default function Review() {
                             reviewRef.current.focus();
                         }}>검색</button>
                     </div>
+                    <div>
+                    <input placeholder="식당명"
+                            type="text"
+                            value={inputNewre}
+                            onChange={(e) => setInputnewre(e.target.value)} />
+                        <input placeholder="리뷰 작성"
+                            type="text"
+                            value={newReview}
+                            onChange={(e) => setNewreview(e.target.value)} />
+                        <button onClick={onUpdate}>
+                          리뷰추가
+                        </button>
+                    </div>
 
-                </div>
+                </p>
             </div>
         </div>
     );

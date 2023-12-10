@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { Map, MapMarker, MapInfoWindow } from "react-kakao-maps-sdk";
 import useKakaoLoader from './useKakaoLoader';
 const { kakao } = window;
 
-export default function MyMap({search}) {
+export default function MyMap({ search }) {
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
   const [infowindow, setInfowindow] = useState(null);
   const [initialLatitude, setInitialLatitude] = useState(37.277272);
   const [initialLongitude, setInitialLongitude] = useState(127.134346);
   const [name, setName] = useState('');
+  const [car, setCar] = useState('');
+  const [add, setAdd] = useState('');
+  const [num, setNum] = useState('');
   const [data, setData] = useState([]);
+  const [infoWindowOpen, setInfoWindowOpen] = useState(false);
   useKakaoLoader()
 
   useEffect(() => {
@@ -21,22 +25,26 @@ export default function MyMap({search}) {
       .then((response) => {
         setData(response.data.getTblFnrstrnStusInfo.body.items.item);
         console.log(response.data);
-        }
+      }
       )
       .catch((error) => {
         console.error(error);
       });
   }, []);
-  useEffect(()=>{
+  useEffect(() => {
     for (let i = 0; i < data.length; i++) {
-      const { bsnsNm, lat, lng } = data[i];
+      const { bsnsNm, lat, lng, addrRoad, tel, bsnsCond } = data[i];
       if (bsnsNm.includes(search)) {
         setInitialLatitude(lat);
         setInitialLongitude(lng);
         setName(bsnsNm);
+        setAdd(addrRoad);
+        setNum(tel);
+        setCar(bsnsCond);
       }
-  }
-  }, [search])
+    }
+  }, [search, data]);
+
 
   return (
     <div>
@@ -61,25 +69,32 @@ export default function MyMap({search}) {
         >
           <div style={{ padding: "5px", color: "#000" }}>
             {name} <br />
-            <a
-              href="https://map.kakao.com/link/map/Hello World!,33.450701,126.570667"
-              style={{ color: "blue" }}
-              target="_blank"
-              rel="noreferrer"
+            <button onClick={() => setInfoWindowOpen(!infoWindowOpen)}>
+              자세히 보기
+            </button>
+
+            <div style={{ display: infoWindowOpen ? "block" : "none", position: 'absolute', padding: "5px", color: "#000", background: "white", width: "300px", border: '1px solid black', top: '0', right: 'calc(100% + 10px)' }}>
+              <p>가게 이름: {name}</p>
+              <p>식사류: {car}</p>
+              <p>주소: {add}</p>
+              <p>전화번호: {num}</p>
+            </div>
+
+            <button
+              onClick={() => window.open("https://map.kakao.com/link/to/" + name + "," + initialLatitude + "," + initialLongitude, "_blank")}
+
             >
-            자세히보기
-            </a>
-            <a
-              href="https://map.kakao.com/link/to/Hello World!,43.450701,126.570667"
-              style={{ color: "blue" }}
-              target="_blank"
-              rel="noreferrer"
+              길 찾기
+            </button>
+            <button
+              onClick={() => console.log("책갈피")}
+              style={{ marginLeft: "10px" }}
             >
-            길 찾기
-            </a>
+              책갈피(가 되고 싶은 것.)
+            </button>
           </div>
         </MapMarker>
       </Map>
-    </div>
+    </div >
   );
 };

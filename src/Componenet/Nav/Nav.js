@@ -6,6 +6,7 @@ export default function Nav() {
     const [search, setSearch] = useState('');
     const [find, setFind] = useState('');
     const [dataBases, setDataBases] = useState([]);
+    const [bookMark, setBookMark] = useState([]);
     const navRef = useRef(null);
 
     const searchReset = () => {
@@ -27,7 +28,7 @@ export default function Nav() {
         };
         fetchData();
     }, []);
-    
+
 
     return (
         <div>
@@ -47,16 +48,15 @@ export default function Nav() {
                     onChange={(e) => setFind(e.target.value)}
                     style={{ marginTop: '50px' }} />
                 <button onClick={searchReset}>검색</button>
-                <NavDraw dataBases={dataBases} />
-
+                <NavDraw dataBases={dataBases} bookMark={bookMark} setBookMark={setBookMark} />
 
             </div>
-            <MyMap search={search} />
+            <MyMap search={search} bookMark={bookMark} setBookMark={setBookMark} />
         </div>
     );
 }
 
-const NavDraw = ({ dataBases }) => {
+const NavDraw = ({ dataBases, bookMark, setBookMark }) => {
     const [drawNav, setDrawNav] = useState(0);
     const [resultData, setResultData] = useState(dataBases);
 
@@ -79,6 +79,10 @@ const NavDraw = ({ dataBases }) => {
                     filterData = [...filterData, { bsnsNm: '가게명: ' + bsnsNm, tel: '가게 번호: ' + tel, bsnsCond: '가게 유형: ' + bsnsCond }];
                 }
             }
+        } else if (drawNav === 3) {
+            for (let i = 0; i < bookMark.length; i++) {
+                filterData = [...filterData, { bsnsNm: bookMark[i] }]
+            }
         }
         setResultData(filterData);
     }, [drawNav, dataBases]);
@@ -89,6 +93,7 @@ const NavDraw = ({ dataBases }) => {
                 <button type='button' onClick={() => setDrawNav(0)}>가게명</button>
                 <button type='button' onClick={() => setDrawNav(1)}>가게명+가게정보</button>
                 <button type='button' onClick={() => setDrawNav(2)}>한식집 정보</button>
+                <button type='button' onClick={() => setDrawNav(3)}>책갈피 보기</button>
             </div>
             <NavList resultData={resultData} />
         </div>

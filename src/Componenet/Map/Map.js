@@ -4,7 +4,7 @@ import { Map, MapMarker, MapInfoWindow } from "react-kakao-maps-sdk";
 import useKakaoLoader from './useKakaoLoader';
 const { kakao } = window;
 
-export default function MyMap({ search }) {
+export default function MyMap({ search, bookMark, setBookMark }) {
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
   const [infowindow, setInfowindow] = useState(null);
@@ -17,6 +17,8 @@ export default function MyMap({ search }) {
   const [data, setData] = useState([]);
   const [infoWindowOpen, setInfoWindowOpen] = useState(false);
   useKakaoLoader()
+
+
 
   useEffect(() => {
     axios

@@ -16,19 +16,15 @@ export default function MyMap({ search, bookMark, setBookMark }) {
   const [num, setNum] = useState('');
   const [data, setData] = useState([]);
   const [infoWindowOpen, setInfoWindowOpen] = useState(false);
-  useKakaoLoader()
-
-
+  useKakaoLoader();
 
   useEffect(() => {
     axios
       .get('https://apis.data.go.kr/6260000/BusanTblFnrstrnStusService/getTblFnrstrnStusInfo?serviceKey=GMMb25M6CeNcyjdi0iJYWziSyQ1XhLZkO9vfxnVW391ZbRvT%2BeUSs5MoCDmD6YzF38nAucMZbMWtobyJW84gYA%3D%3D&numOfRows=100&pageNo=1&resultType=json')
-
       .then((response) => {
         setData(response.data.getTblFnrstrnStusInfo.body.items.item);
         console.log(response.data);
-      }
-      )
+      })
       .catch((error) => {
         console.error(error);
       });
@@ -37,6 +33,7 @@ export default function MyMap({ search, bookMark, setBookMark }) {
     for (let i = 0; i < data.length; i++) {
       const { bsnsNm, lat, lng, addrRoad, tel, bsnsCond } = data[i];
       if (bsnsNm.includes(search)) {
+        console.log(bsnsNm.includes(search));
         setInitialLatitude(lat);
         setInitialLongitude(lng);
         setName(bsnsNm);
@@ -47,6 +44,17 @@ export default function MyMap({ search, bookMark, setBookMark }) {
     }
   }, [search, data]);
 
+  const addBookmark = () => {
+    if (name) {
+      setBookMark([...bookMark, name]);
+    }
+  };
+
+  // useEffect(() => {
+  //   if (name) {
+  //     addBookmark();
+  //   }
+  // }, [name, bookMark]);
 
   return (
     <div>
@@ -84,15 +92,13 @@ export default function MyMap({ search, bookMark, setBookMark }) {
 
             <button
               onClick={() => window.open("https://map.kakao.com/link/to/" + name + "," + initialLatitude + "," + initialLongitude, "_blank")}
-
             >
               길 찾기
             </button>
             <button
-              onClick={() => console.log("책갈피")}
-              style={{ marginLeft: "10px" }}
+              onClick={() => addBookmark()}
             >
-              책갈피(가 되고 싶은 것.)
+              책갈피
             </button>
           </div>
         </MapMarker>

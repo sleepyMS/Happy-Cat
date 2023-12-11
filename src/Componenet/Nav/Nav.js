@@ -3,7 +3,7 @@ import MyMap from '../Map/Map'
 import axios from 'axios';
 
 export default function Nav() {
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState('-1');
     const [find, setFind] = useState('');
     const [dataBases, setDataBases] = useState([]);
     const [bookMark, setBookMark] = useState([]);
@@ -81,11 +81,11 @@ const NavDraw = ({ dataBases, bookMark, setBookMark }) => {
             }
         } else if (drawNav === 3) {
             for (let i = 0; i < bookMark.length; i++) {
-                filterData = [...filterData, { bsnsNm: bookMark[i] }]
+                filterData = [...filterData, { bsnsNm: bookMark[i] }];
             }
         }
         setResultData(filterData);
-    }, [drawNav, dataBases]);
+    }, [drawNav, bookMark, dataBases]);
 
     return (
         <div id='nav-draw'>
